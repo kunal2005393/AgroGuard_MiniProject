@@ -1,157 +1,223 @@
-<<<<<<< HEAD
-# AgroGuard — Intelligent IoT Precision Agriculture & Decision Support Platform
+# 🌱 AGROGUARD — Smart Agriculture Decision Support System
 
-AgroGuard is an end-to-end smart agriculture decision support system designed for smallholder and commercial farmers. It couples real-time Arduino UNO R4 WiFi telemetry, dedicated hardware device API key authentication, automated agronomic decision engines (AFHI, CAII, SPAE), cloud database persistence, and farmer-friendly interfaces across 10 Indian regional languages.
+**An IoT-Based Multi-Parameter Precision Agriculture Decision Support System for Sustainable Farming**
 
----
+AGROGUARD is a low-cost smart agriculture project designed to help farmers make informed decisions about farm conditions, irrigation, and pesticide spraying. It combines environmental sensors, an Arduino-based monitoring device, a FastAPI backend, a Supabase database, and a web dashboard to transform field measurements into actionable recommendations.
 
-## Architecture Summary
+## 🎯 Problem Statement
 
-```
-                      +-----------------------------+
-                      |   Arduino UNO R4 WiFi Node  |
-                      |  (Sensors: Moisture, Temp,  |
-                      |   Humidity, Rain, Water)    |
-                      +--------------+--------------+
-                                     |
-                                     | HTTP POST (X-Device-API-Key Header)
-                                     v
-+-----------------------+   +-----------------------------+   +-------------------------+
-|   Farmer Web Client   |   |   FastAPI Backend (5000)    |   |   Supabase PostgreSQL   |
-| (Dashboard, Login,    |<->| - Dual Device / JWT Auth    |<->| - 8 Relational Tables   |
-|  Alerts, Profile)     |   | - AFHI Health Model         |   | - RLS Ownership         |
-| [10 Indian Languages] |   | - CAII Irrigation Intel     |   | - Secure JWT Auth       |
-+-----------------------+   | - SPAE Spray Safety         |   +-------------------------+
-                            | - Device & Farm Ownership   |
-                            +-----------------------------+
-```
+Farmers face challenges such as inefficient water use, limited access to real-time field information, uncertain irrigation timing, and unsuitable pesticide spraying conditions. AGROGUARD aims to address these challenges through affordable monitoring and decision-support technology.
 
----
+## ✨ Key Features
 
-## Directory Structure
+- **Multi-Parameter Monitoring:** Measures soil moisture, temperature, humidity, rainfall, and water-tank level.
+- **AFHI — Adaptive Farm Health Index:** Combines monitored parameters into a weighted farm-condition score.
+- **CAII — Crop Adaptive Irrigation Intelligence:** Provides irrigation and water-availability recommendations.
+- **SPAE — Smart Pesticide Advisory Engine:** Provides spraying-condition recommendations based on environmental readings.
+- **Web Dashboard:** Presents sensor readings, farm-health information, and recommendations.
+- **Local Status Display:** Uses an OLED display and status LEDs for on-device feedback.
+- **Database Integration:** Uses Supabase and PostgreSQL for structured data storage.
+- **Modular Architecture:** Separates sensor acquisition, backend processing, decision logic, storage, and visualization.
 
-```
-AgroGuard-Complete-Project/
-├── frontend/                     # Modern responsive web console
-│   ├── index.html                # Hero splash and introduction
-│   ├── dashboard.html            # Main farmer telemetry & decision dashboard
-│   ├── login.html                # Phone OTP verification portal
-│   ├── profile.html              # Farm plot & farmer profile management
-│   ├── alerts.html               # Real-time alert notifications console
-│   ├── about.html, features.html # Informational portals
-│   ├── css/style.css             # Unified AgriTech design system
-│   ├── js/                       # Modular services: auth, dashboard, i18n, notifications
-│   └── locales/                  # 10 Indian language JSON dictionaries
-├── backend/                      # High-performance FastAPI REST API
+> **Note:** The current prototype uses rule-based and weighted decision logic. Machine learning and computer vision are potential future enhancements.
+
+## 🧰 Technology Stack
+
+| Component | Technology |
+|---|---|
+| Microcontroller | Arduino UNO R4 WiFi |
+| Sensors | Soil moisture, DHT11, rain sensor, water-level sensor |
+| Local display | SSD1306 OLED |
+| Backend | Python, FastAPI |
+| Database | Supabase, PostgreSQL |
+| Frontend | HTML, CSS, JavaScript |
+| Communication | Wi-Fi, HTTP/REST APIs |
+| Decision support | AFHI, CAII, SPAE |
+
+## 🏗️ System Architecture
+
+
+Field Sensors
+     ↓
+Arduino UNO R4 WiFi
+     ↓ Wi-Fi / HTTP
+FastAPI Backend
+     ↓
+Validation and Decision Engine
+     ├── AFHI: Farm Health Assessment
+     ├── CAII: Irrigation Advisory
+     └── SPAE: Pesticide Advisory
+     ↓
+Supabase / PostgreSQL
+     ↓
+Web Dashboard
+
+Arduino → OLED Display and Status LEDs
+
+
+## 📊 Decision-Support Modules
+
+### 1. AFHI — Adaptive Farm Health Index
+
+AFHI calculates a weighted score from normalized soil moisture, temperature, humidity, rainfall, and water availability.
+
+The prototype uses the following weights:
+
+- Soil moisture: 30%
+- Temperature: 20%
+- Humidity: 15%
+- Rainfall: 20%
+- Water availability: 15%
+
+The resulting score supports an overall assessment of monitored farm conditions. The weights and thresholds are prototype settings and require field validation before agricultural deployment.
+
+### 2. CAII — Crop Adaptive Irrigation Intelligence
+
+CAII considers soil moisture, rainfall, water availability, and crop context to provide irrigation-related recommendations. It is intended to support water-conscious decisions rather than replace farmer judgment.
+
+### 3. SPAE — Smart Pesticide Advisory Engine
+
+SPAE evaluates environmental conditions to advise whether spraying should be avoided, delayed, or considered under the prototype's rules. Its output is advisory only and does not establish pesticide safety or replace product-label instructions and agricultural expert guidance.
+
+## 🔌 Hardware Components
+
+- Arduino UNO R4 WiFi
+- DHT11 temperature and humidity sensor
+- Soil moisture sensor
+- Rain sensor
+- Water-level sensor
+- SSD1306 I²C OLED display
+- Green, yellow, and red LEDs
+- Push buttons for user interaction
+- Buzzer (optional, depending on the current hardware configuration)
+- Connecting wires and breadboard
+
+## 📁 Project Structure
+
+`text
+AgroGuard_MiniProject/
+├── arduino/
+│   ├── agroguard_device_telemetry/
+│   └── agroguard_wifi_test/
+├── backend/
 │   ├── app/
-│   │   ├── auth/                 # PyJWT token verification, Device API Key auth, & ownership dependencies
-│   │   ├── routes/               # API endpoints (sensor, dashboard, control, database, auth)
-│   │   ├── schemas/              # Pydantic validation schemas
-│   │   ├── services/             # AFHI, CAII, SPAE models, sensor simulator, pump service
-│   │   │   └── database/         # Supabase PostgreSQL client & in-memory fallback
-│   │   ├── config.py             # Settings & CORS configuration
-│   │   └── main.py               # Application factory & global handlers
-│   ├── requirements.txt          # Python dependencies
-│   ├── .env.example              # Environment variables template
-│   └── run.py                    # Entry point runner script
-├── database/                     # PostgreSQL database foundation
-│   ├── supabase_schema.sql       # Full schema DDL (tables, FKs, RLS, indexes)
-│   └── README.md                 # Supabase setup instructions
-├── arduino/                      # Arduino UNO R4 WiFi firmware
-│   ├── agroguard_wifi_test/      # Task 4A connectivity sketch
-│   └── agroguard_device_telemetry/ # Task 4C live telemetry & device auth sketch
-└── README.md                     # This master document
+│   ├── routes/
+│   ├── services/
+│   └── requirements.txt
+├── database/
+│   ├── README.md
+│   └── supabase_schema.sql
+├── frontend/
+│   ├── assets/
+│   ├── css/
+│   ├── js/
+│   ├── locales/
+│   └── index.html
+├── .gitignore
+└── README.md
+`
+
+## 🚀 Setup and Installation
+
+### Prerequisites
+
+- Python 3.10 or a compatible version supported by the project dependencies
+- Git
+- Arduino IDE
+- Required Arduino libraries
+- A Supabase project if database integration is enabled
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/kunal2005393/AgroGuard_MiniProject.git
+cd AgroGuard_MiniProject
 ```
 
----
+### 2. Set up the backend
 
-## Quickstart Guide
-
-### 1. Prerequisites
-- Python 3.10+ installed
-- Arduino IDE 2.0+ (with Arduino UNO R4 Board Package & WiFiS3, DFRobot_DHT11, Adafruit_SSD1306 libraries)
-- Web browser (Chrome, Firefox, Edge, Safari)
-- (Optional) Supabase free account for cloud database
-
----
-
-### 2. Run the FastAPI Backend
 ```bash
 cd backend
-
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start backend server listening on all interfaces (LAN & Hotspot accessible)
-python -m uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload
+python -m venv venv
 ```
-- **Backend Health Check:** [http://127.0.0.1:5000/health](http://127.0.0.1:5000/health) or [http://10.170.94.154:5000/health](http://10.170.94.154:5000/health)
-- **Interactive OpenAPI Docs:** [http://127.0.0.1:5000/docs](http://127.0.0.1:5000/docs)
 
----
+Activate the virtual environment on Windows:
 
-### 3. Run the Frontend
-In a separate terminal:
+```powershell
+.\venv\Scripts\Activate.ps1
+``'
+
+Install the dependencies:
+
 ```bash
-cd frontend
-
-# Start lightweight HTTP server
-python -m http.server 8000
+pip install -r requirements.txt
 ```
-- **Dashboard:** [http://127.0.0.1:8000/dashboard.html](http://127.0.0.1:8000/dashboard.html)
-- **Login:** [http://127.0.0.1:8000/login.html](http://127.0.0.1:8000/login.html)
-- **Home:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
----
+Configure the required environment variables using the provided `.env.example` as a guide. Use your own credentials and never commit real secrets.
 
-### 4. Device Registration & Arduino Setup
+Run the backend from the backend directory using the entry point documented in the project. For an application exposed as `app.main:app`, the command is:
 
-#### Device Registration Procedure:
-1. Authenticate as farmer or generate demo token via `POST http://10.170.94.154:5000/auth/demo-token`.
-2. Get your `farm_id` via `GET http://10.170.94.154:5000/farms`.
-3. Register your Arduino device via `POST http://10.170.94.154:5000/devices`:
-   ```json
-   {
-     "farm_id": "YOUR_FARM_ID",
-     "device_name": "Arduino UNO R4 WiFi Node",
-     "device_api_key": "device_api_key",
-     "status": "active"
-   }
-   ```
-4. Configure `arduino/agroguard_device_telemetry/arduino_secrets.h`:
-   ```cpp
-   #define SECRET_SSID     "YOUR_PHONE_HOTSPOT"
-   #define SECRET_PASS     "YOUR_HOTSPOT_PASSWORD"
-   #define DEVICE_ID       "DEVICE_ID"
-   #define DEVICE_API_KEY  "DEVICE_API_KEY"
-   #define SERVER_HOST     "SERVER_HOST"
-   #define SERVER_PORT     5000
-   ```
-5. Open `arduino/agroguard_device_telemetry/agroguard_device_telemetry.ino` in Arduino IDE, select board **Arduino UNO R4 WiFi**, and upload!
+```bash
+python -m uvicorn app.main:app --host 127.0.0.1 --port 5000
+```
 
----
+### 3. Configure the database
 
-## Agronomic Decision Models
+1. Create a Supabase project.
+2. Review `database/supabase_schema.sql`.
+3. Apply the schema using the Supabase SQL Editor if it matches your current backend configuration.
+4. Configure database connection details through environment variables.
 
-1. **AFHI (Adaptive Farm Health Index)**:
-   Authoritative multi-criteria decision model (0–100 score):
-   `AFHI = (SM * 0.30) + (T * 0.20) + (H * 0.15) + (R * 0.20) + (W * 0.15)`
-   - Status: `Excellent` (80–100), `Good` (60–79), `Needs Attention` (40–59), `Critical` (<40).
+Refer to [`database/README.md`](database/README.md) for database-specific instructions.
 
-2. **CAII (Crop Adaptive Irrigation Intelligence)**:
-   Prioritized 7-state irrigation automation model with rain suspension and tank depletion safeguards.
+### 4. Configure the Arduino device
 
-3. **SPAE (Smart Pesticide Advisory Engine)**:
-   Environmental spray suitability assessment (Suitable / Caution / Unsafe) factoring drift, evaporation, and wash-off risks.
-=======
-# AgroGuard_MiniProject
->>>>>>> 711ed4a77d25f0069ff13e17496b0c67f0765b99
+1. Open the required `.ino` file from the `arduino/` directory in Arduino IDE.
+2. Install the libraries required by the sketch.
+3. Create your own local `arduino_secrets.h` using the provided example template, if available.
+4. Configure your Wi-Fi credentials, device ID, backend host, port, and device API key locally.
+5. Ensure the device and computer can communicate over the same network when using a local backend.
+6. Select the correct board and port, then upload the sketch.
+
+**Security:** Never publish Wi-Fi passwords, device API keys, Supabase service-role keys, or other private credentials.
+
+### 5. Run the frontend
+
+Open `frontend/index.html` in a browser or use a local development server. Configure the API base URL in the frontend settings or source code to match the running backend.
+
+## 🌍 Sustainable Development Goals
+
+AGROGUARD aligns with the objectives of:
+
+- **SDG 2 — Zero Hunger:** Supporting informed and sustainable agricultural practices.
+- **SDG 6 — Clean Water and Sanitation:** Encouraging efficient water management.
+- **SDG 9 — Industry, Innovation and Infrastructure:** Applying affordable technology to agricultural challenges.
+- **SDG 12 — Responsible Consumption and Production:** Supporting more informed resource use.
+- **SDG 13 — Climate Action:** Encouraging climate-aware agricultural decisions.
+
+These are intended contributions; their real-world impact requires evaluation.
+
+## 🔮 Future Scope
+
+- Machine-learning-based irrigation prediction
+- Crop recommendation using soil and environmental information
+- Fertilizer advisory
+- Computer-vision-based crop-health assessment
+- Advanced weather integration
+- Automated irrigation hardware
+- Mobile application and notifications
+- Multi-farm monitoring and field trials
+
+## ⚠️ Limitations
+
+AGROGUARD is a prototype decision-support system. Sensor calibration, environmental variability, crop-specific requirements, and local agricultural conditions can affect recommendations. Field testing and expert validation are required before relying on its outputs for operational farming decisions.
+
+## 👨‍💻 Project Information
+
+**Project Name:** AGROGUARD  
+**Category:** IoT, Smart Agriculture, Precision Agriculture  
+**Repository:** [AgroGuard_MiniProject](https://github.com/kunal2005393/AgroGuard_MiniProject)
+
+## 📄 License
+
+A license has not yet been specified. Add an appropriate license file if you want to define how others may reuse, modify, or distribute this project.
