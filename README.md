@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AgroGuard — Intelligent IoT Precision Agriculture & Decision Support Platform
 
 AgroGuard is an end-to-end smart agriculture decision support system designed for smallholder and commercial farmers. It couples real-time Arduino UNO R4 WiFi telemetry, dedicated hardware device API key authentication, automated agronomic decision engines (AFHI, CAII, SPAE), cloud database persistence, and farmer-friendly interfaces across 10 Indian regional languages.
@@ -151,3 +152,6 @@ python -m http.server 8000
 
 3. **SPAE (Smart Pesticide Advisory Engine)**:
    Environmental spray suitability assessment (Suitable / Caution / Unsafe) factoring drift, evaporation, and wash-off risks.
+=======
+# AgroGuard_MiniProject
+>>>>>>> 711ed4a77d25f0069ff13e17496b0c67f0765b99
